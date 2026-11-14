@@ -1,0 +1,11 @@
+# Add to configuration.yaml, then restart Home Assistant.
+# Put the key in secrets.yaml first:  sparetext_api_key: spt_live_...
+notify:
+  - name: sparetext
+    platform: rest
+    resource: https://sparetext.dev/api/v1/messages
+    method: POST_JSON
+    headers:
+      x-api-key: !secret sparetext_api_key
+    message_param_name: text
+    target_param_name: to

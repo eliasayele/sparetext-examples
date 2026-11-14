@@ -1,0 +1,34 @@
+# Two automations: one texts you, one runs when a text arrives.
+# Numbers are in E.164, with the country code. +15550100123 is a placeholder: use your own.
+
+- alias: "Text me when the garage door is left open"
+  triggers:
+    - trigger: state
+      entity_id: cover.garage_door
+      to: "open"
+      for: "00:10:00"
+  actions:
+    - action: notify.sparetext
+      data:
+        target: "+15550100123"
+        message: "The garage door has been open for 10 minutes."
+
+# Needs Home Assistant reachable over HTTPS from the internet (Home Assistant Cloud or your
+# own domain). In Sparetext, add the webhook https://YOUR-HOME-ASSISTANT/api/webhook/YOUR-ID
+# with the Text received event. Keep text commands away from locks, alarms and doors.
+- alias: "Porch light by text"
+  triggers:
+    - trigger: webhook
+      webhook_id: "PASTE-YOUR-OWN-LONG-RANDOM-ID"
+      allowed_methods: [POST]
+      local_only: false
+  conditions:
+    - condition: template
+      value_template: >
+        {{ trigger.json.type == 'message.received'
+           and trigger.json.data.message.contact == '+15550100123'
+           and trigger.json.data.message.text | lower | trim == 'porch on' }}
+  actions:
+    - action: light.turn_on
+      target:
+        entity_id: light.porch
