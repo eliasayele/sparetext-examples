@@ -1,3 +1,5 @@
+<img src="https://sparetext.dev/sparetext-logo.png" alt="Sparetext logo" width="72" height="72">
+
 # Sparetext examples: a free SMS API from your own phone
 
 **Send and receive real SMS from the Android phone or iPhone you already own, with one HTTP request.** These are working examples for [Sparetext](https://sparetext.dev): curl, Python, Node.js, n8n, Home Assistant, signed webhooks, one-time codes, and the hosted MCP server that lets Claude, ChatGPT and Cursor text from your own number.
@@ -38,6 +40,7 @@ The answer carries the text's id with `"status": "queued"`, and the phone sends 
 | [`n8n/`](n8n/) | Send from an HTTP Request node, start a workflow when a text arrives, check the signature in a Code node, give an AI Agent your phone |
 | [`home-assistant/`](home-assistant/) | Text from any automation with a RESTful notifier, and run automations when a text arrives |
 | [`mcp/`](mcp/) | Connect Claude, ChatGPT, Claude Code, Cursor or VS Code to the MCP server, and list its tools from a script |
+| [`skill/sparetext-sms/`](skill/sparetext-sms/) | An agent skill (SKILL.md) that connects the MCP server and teaches the agent when and how to text: consent, STOP, segments, replies. Copy the folder into `~/.claude/skills/` or your agent's skills folder |
 
 Every script reads `SPARETEXT_API_KEY`, and `SPARETEXT_SERVER` if you point it somewhere other than `https://sparetext.dev`. Numbers are in E.164, with the country code. The numbers in these examples are fictional 555 numbers: use your own.
 
