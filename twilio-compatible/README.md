@@ -71,8 +71,34 @@ print(message.sid, message.status)
 | [`send.mjs`](send.mjs) | twilio-node: send, then fetch until the phone has sent it. `npm install`, then `node send.mjs +12025550123 "Hi"` |
 | [`send.py`](send.py) | twilio-python, the same. `pip install -r requirements.txt`, then `python3 send.py +12025550123 "Hi"` |
 | [`status-callback.mjs`](status-callback.mjs) | A StatusCallback receiver that checks `X-Twilio-Signature` with `twilio.validateRequest` |
+| [`incoming.mjs`](incoming.mjs) | An "A message comes in" handler: checks the signature and answers TwiML with `MessagingResponse` |
+| [`setup-incoming.sh`](setup-incoming.sh) | Points the texts your phone receives at that handler: `./setup-incoming.sh https://your-server.example/sms` |
 
 Tried with twilio 5.13.1 (Node) and twilio 9.13.0 (Python), pinned in `package.json` and `requirements.txt`.
+
+## List, update and delete
+
+```js
+const texts = await client.messages.list({ to: "+12025550123", limit: 100 }); // follows next_page_uri
+client.messages.each({ dateSentAfter: new Date("2026-11-01") }, (m) => console.log(m.sid, m.status, m.body));
+await client.messages(sid).update({ status: "canceled" }); // a text still waiting to go out
+await client.messages(sid).update({ body: "" });           // remove a sent text's words
+await client.messages(sid).remove();                       // delete it
+```
+
+List takes `To`, `From`, `DateSent`, `DateSent<`, `DateSent>` and `PageSize`, newest first, and the clients follow `next_page_uri` themselves. Removing words and deleting need a key without limits (clear the key's limits on the API keys page), as on Sparetext's own API.
+
+## Incoming texts, to a handler written for Twilio
+
+On Twilio, a number's "A message comes in" URL gets each text. On Sparetext, an automation does it: **Automations, Call a URL, Twilio handler** in the dashboard, or [`setup-incoming.sh`](setup-incoming.sh). Each text your phone receives is posted as Twilio's form fields (`From`, `To`, `Body`, `MessageSid`, `NumMedia`, `MediaUrl0`, ...), signed in `X-Twilio-Signature` with the automation's secret. Answer TwiML and the `<Message>` goes back to the sender from the same phone:
+
+```js
+const twiml = new twilio.twiml.MessagingResponse();
+twiml.message("Thanks, we got your message.");
+res.type("text/xml").send(twiml.toString());
+```
+
+Up to 3 `<Message>`s, each with up to 3 `<Media>` pictures. A `<Message>`'s `to` and `from` are ignored: the reply always goes to the person who texted, so a handler can't text anyone else. One reply a minute to the same number. `MediaUrl0` needs your key, as the HTTP Basic password like everything else here.
 
 ## What maps to what
 
@@ -80,8 +106,8 @@ Tried with twilio 5.13.1 (Node) and twilio 9.13.0 (Python), pinned in `package.j
 - **`Body`** up to 1,600 characters, **`MediaUrl`** up to 3 pictures (an MMS), **`SendAt`** with `ScheduleType=fixed` up to 30 days ahead, **`ValidityPeriod`** in seconds.
 - **`StatusCallback`** hears `sent`, `delivered`, `failed` or `undelivered`, and `canceled`, form-encoded with Twilio's fields (`MessageSid`, `MessageStatus`, `ErrorCode`, ...). `X-Twilio-Signature` is signed with your callback secret (Webhooks page, or `POST /api/v1/webhooks/callback-secret`), so Twilio's own `validateRequest` checks it with that secret in place of the Auth Token.
 - **Statuses**: `queued`, `scheduled`, `sending` (a phone has it), `sent`, `delivered`, `undelivered` (the carrier's report said no), `failed`, `canceled`.
-- **Errors** come back as Twilio's `{code, message, more_info, status}` with Twilio's codes: 21211 a bad `To`, 21602 no `Body`, 21610 a number that replied STOP, 20003 a bad key, 20429 too fast, 20005 the month's texts are used up.
+- **Errors** come back as Twilio's `{code, message, more_info, status}` with Twilio's codes: 21211 a bad `To`, 21602 no `Body`, 21610 a number that replied STOP, 20003 a bad key, 20429 too fast, 20005 the month's texts are used up, 20009 deleting a text still on its way.
 - **Ignored**: `MessagingServiceSid`, `ApplicationSid`, `MaxPrice`, `ShortenUrls` and Twilio's other options. `ContentSid` templates are refused: send the words in `Body`.
 - **Limits** are Sparetext's: Free is 1 phone and 300 texts a month, and opt-outs, each key's caps and the send rate hold as on `POST /api/v1/messages`.
 
-Only sending and fetching texts are covered. For replies, conversations and phones, use the [Sparetext API](https://sparetext.dev/docs) or its webhooks. The full reference: [sparetext.dev/docs#twilio](https://sparetext.dev/docs#twilio).
+Twilio's Messages API is covered: send, list, fetch, update, delete, status callbacks and incoming texts. For conversations, phones, contacts and everything else, use the [Sparetext API](https://sparetext.dev/docs). The full reference: [sparetext.dev/docs#twilio](https://sparetext.dev/docs#twilio).

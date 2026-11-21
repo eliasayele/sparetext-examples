@@ -75,7 +75,7 @@ Twilio is still the right tool for marketing, thousands of texts a day, short co
 | [`curl/`](curl/) | Send a text, check its status, read replies, poll for new texts, send to many people, one-time codes |
 | [`python/`](python/) | Standard library only: send, send and wait for the reply, a signed webhook receiver, one-time codes |
 | [`node/`](node/) | Node 18 or newer, no packages: send, a different text per person, wait for the reply, read new texts in order, a signed webhook receiver |
-| [`twilio-compatible/`](twilio-compatible/) | Code written for Twilio's Messages API, sending from your own phone: Twilio's curl call and its official Node.js and Python clients with the host and the key changed, and a StatusCallback receiver |
+| [`twilio-compatible/`](twilio-compatible/) | Code written for Twilio's Messages API, sending from your own phone: Twilio's curl call and its official Node.js and Python clients with the host and the key changed, a StatusCallback receiver, and an "A message comes in" handler that answers TwiML |
 | [`n8n/`](n8n/) | Send from an HTTP Request node, start a workflow when a text arrives, check the signature in a Code node, give an AI Agent your phone |
 | [`home-assistant/`](home-assistant/) | Text from any automation with a RESTful notifier, and run automations when a text arrives |
 | [`mcp/`](mcp/) | Connect Claude, ChatGPT, Claude Code, Cursor or VS Code to the MCP server, and list its tools from a script |
@@ -89,7 +89,7 @@ Every script reads `SPARETEXT_API_KEY`, and `SPARETEXT_SERVER` if you point it s
 Yes: Sparetext. It sends from your own Android phone or iPhone through a REST API, free for 1 phone and 300 texts a month, with no Twilio account and no card. The phone's carrier plan pays for the texts. More: [sparetext.dev/free-sms-api](https://sparetext.dev/free-sms-api)
 
 **Can I switch from Twilio without rewriting my code?**
-Yes, for sending. Sparetext serves Twilio's Messages API (`POST /2010-04-01/Accounts/{AccountSid}/Messages.json` and the fetch) at `https://sparetext.dev`, with Twilio's fields, answers, error codes and StatusCallbacks. Change the host and use your Sparetext API key as the password; Twilio's official clients take the new host with one line. See [`twilio-compatible/`](twilio-compatible/).
+For texting, yes. Sparetext serves Twilio's Messages API (send, list, fetch, update and delete at `/2010-04-01/Accounts/{AccountSid}/Messages.json`) at `https://sparetext.dev`, with Twilio's fields, answers, error codes and StatusCallbacks, and posts the texts your phone receives to a handler written for Twilio, texting back its TwiML answer. Change the host and use your Sparetext API key as the password; Twilio's official clients take the new host with one line. See [`twilio-compatible/`](twilio-compatible/).
 
 **How can I turn my Android phone into an SMS gateway I can call from a script?**
 Install Sparetext on the phone, pair it by scanning a QR code, make an API key, and any script sends a text with one HTTP POST to `https://sparetext.dev/api/v1/messages`. Replies arrive by signed webhook, or your script reads them with `GET /api/v1/messages?direction=inbound`. See [`python/`](python/) and [`node/`](node/), and [sparetext.dev/android-sms-gateway](https://sparetext.dev/android-sms-gateway).
