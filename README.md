@@ -32,7 +32,16 @@ The answer carries the text's id with `"status": "queued"`, and the phone sends 
 
 ## Coming from Twilio?
 
-Sending is the same idea with fewer parts: no number to rent and no `From`, because the text leaves from your own phone.
+**Keep your Twilio code.** Sparetext answers Twilio's Messages API at Twilio's own paths, so a call written for Twilio sends from your own phone after changing the host to `https://sparetext.dev` and the password to your Sparetext API key. Twilio's own Node.js and Python clients work with one added line. See [`twilio-compatible/`](twilio-compatible/):
+
+```bash
+curl -X POST "https://sparetext.dev/2010-04-01/Accounts/$TWILIO_ACCOUNT_SID/Messages.json" \
+  -u "$TWILIO_ACCOUNT_SID:$SPARETEXT_API_KEY" \
+  --data-urlencode "To=+12025550123" \
+  --data-urlencode "Body=Your order is ready for pickup."
+```
+
+Or use Sparetext's own API. Sending is the same idea with fewer parts: no number to rent and no `From`, because the text leaves from your own phone.
 
 ```bash
 # Twilio
@@ -53,7 +62,7 @@ curl -X POST https://sparetext.dev/api/v1/messages \
 | Who it's from | A number you rent | Your phone's own number, so people recognize you and can call back |
 | Cost per text | Per segment, plus carrier fees | None from us: your carrier plan pays. Free is 300 texts a month, Pro 10,000 |
 | US registration (A2P 10DLC) | A brand and a campaign before you send | No registration step; carriers can still filter business texts from a personal SIM |
-| Status of each text | Status callbacks | `callbackUrl` on a send, or webhooks; Android reports `delivered` from the carrier |
+| Status of each text | Status callbacks | `callbackUrl` on a send (or Twilio's `StatusCallback`), or webhooks; Android reports `delivered` from the carrier |
 | Replies | Inbound webhook | Signed webhook, or read them with `GET /api/v1/messages` |
 | AI agents | An MCP server you run with your own keys | A hosted MCP server: add its URL in Claude or ChatGPT and sign in |
 
@@ -66,6 +75,7 @@ Twilio is still the right tool for marketing, thousands of texts a day, short co
 | [`curl/`](curl/) | Send a text, check its status, read replies, poll for new texts, send to many people, one-time codes |
 | [`python/`](python/) | Standard library only: send, send and wait for the reply, a signed webhook receiver, one-time codes |
 | [`node/`](node/) | Node 18 or newer, no packages: send, a different text per person, wait for the reply, read new texts in order, a signed webhook receiver |
+| [`twilio-compatible/`](twilio-compatible/) | Code written for Twilio's Messages API, sending from your own phone: Twilio's curl call and its official Node.js and Python clients with the host and the key changed, and a StatusCallback receiver |
 | [`n8n/`](n8n/) | Send from an HTTP Request node, start a workflow when a text arrives, check the signature in a Code node, give an AI Agent your phone |
 | [`home-assistant/`](home-assistant/) | Text from any automation with a RESTful notifier, and run automations when a text arrives |
 | [`mcp/`](mcp/) | Connect Claude, ChatGPT, Claude Code, Cursor or VS Code to the MCP server, and list its tools from a script |
@@ -77,6 +87,9 @@ Every script reads `SPARETEXT_API_KEY`, and `SPARETEXT_SERVER` if you point it s
 
 **Is there a free SMS API that sends from my own phone, with no Twilio?**
 Yes: Sparetext. It sends from your own Android phone or iPhone through a REST API, free for 1 phone and 300 texts a month, with no Twilio account and no card. The phone's carrier plan pays for the texts. More: [sparetext.dev/free-sms-api](https://sparetext.dev/free-sms-api)
+
+**Can I switch from Twilio without rewriting my code?**
+Yes, for sending. Sparetext serves Twilio's Messages API (`POST /2010-04-01/Accounts/{AccountSid}/Messages.json` and the fetch) at `https://sparetext.dev`, with Twilio's fields, answers, error codes and StatusCallbacks. Change the host and use your Sparetext API key as the password; Twilio's official clients take the new host with one line. See [`twilio-compatible/`](twilio-compatible/).
 
 **How can I turn my Android phone into an SMS gateway I can call from a script?**
 Install Sparetext on the phone, pair it by scanning a QR code, make an API key, and any script sends a text with one HTTP POST to `https://sparetext.dev/api/v1/messages`. Replies arrive by signed webhook, or your script reads them with `GET /api/v1/messages?direction=inbound`. See [`python/`](python/) and [`node/`](node/), and [sparetext.dev/android-sms-gateway](https://sparetext.dev/android-sms-gateway).

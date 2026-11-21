@@ -1,0 +1,9 @@
+{
+  "name": "sparetext-twilio-compatible",
+  "private": true,
+  "type": "module",
+  "description": "Twilio's own clients sending through Sparetext",
+  "dependencies": {
+    "twilio": "5.13.1"
+  }
+}
