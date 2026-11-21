@@ -30,6 +30,35 @@ curl -X POST https://sparetext.dev/api/v1/messages \
 
 The answer carries the text's id with `"status": "queued"`, and the phone sends it within seconds.
 
+## Coming from Twilio?
+
+Sending is the same idea with fewer parts: no number to rent and no `From`, because the text leaves from your own phone.
+
+```bash
+# Twilio
+curl -X POST "https://api.twilio.com/2010-04-01/Accounts/$TWILIO_ACCOUNT_SID/Messages.json" \
+  -u "$TWILIO_ACCOUNT_SID:$TWILIO_AUTH_TOKEN" \
+  --data-urlencode "From=+12025550100" \
+  --data-urlencode "To=+12025550123" \
+  --data-urlencode "Body=Your order is ready for pickup."
+
+# Sparetext
+curl -X POST https://sparetext.dev/api/v1/messages \
+  -H "x-api-key: $SPARETEXT_API_KEY" -H "content-type: application/json" \
+  -d '{"to": "+12025550123", "text": "Your order is ready for pickup."}'
+```
+
+| | Twilio | Sparetext |
+|---|---|---|
+| Who it's from | A number you rent | Your phone's own number, so people recognize you and can call back |
+| Cost per text | Per segment, plus carrier fees | None from us: your carrier plan pays. Free is 300 texts a month, Pro 10,000 |
+| US registration (A2P 10DLC) | A brand and a campaign before you send | No registration step; carriers can still filter business texts from a personal SIM |
+| Status of each text | Status callbacks | `callbackUrl` on a send, or webhooks; Android reports `delivered` from the carrier |
+| Replies | Inbound webhook | Signed webhook, or read them with `GET /api/v1/messages` |
+| AI agents | An MCP server you run with your own keys | A hosted MCP server: add its URL in Claude or ChatGPT and sign in |
+
+Twilio is still the right tool for marketing, thousands of texts a day, short codes, sender IDs or numbers in many countries. The full comparison, with Twilio's prices: [sparetext.dev/compare/twilio](https://sparetext.dev/compare/twilio).
+
 ## The examples
 
 | Folder | What it shows |
