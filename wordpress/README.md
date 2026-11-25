@@ -52,6 +52,13 @@ On 25 November 2026, in WordPress Playground (WordPress 7.1.5, WooCommerce 11.3.
 - A Contact Form 7 submission through its own REST endpoint texted the shop, and the form's email still went out.
 - A reply came back as a real signed webhook and was emailed to the admin. Sparetext's first try waited longer than 5 seconds for Playground (it runs PHP in WebAssembly), so it tried again 5 seconds later: the second try got a 200 and the reply was emailed once. A POST without a signature got a 401.
 
+Later the same day, after readying it for the WordPress.org directory (the `readme.txt` beside the plugin, and sanitized form fields and replies), it ran again the same way, this time on HPOS, WooCommerce's order tables, which a one-worker Playground runs fine:
+
+- [Plugin Check](https://wordpress.org/plugins/plugin-check/) (all categories) reports nothing but the `Contributors` placeholder in `readme.txt`, which is there on purpose until the WordPress.org account exists.
+- Five orders, one of them flipped between Processing and Completed twice, made exactly one Action Scheduler job per text, and each text was delivered once.
+- A Contact Form 7 message with `I <3 your lemon one` arrived as written, while the site's own email failed.
+- Two real replies came back signed and were emailed once each. Hand-signed tests: the same event twice was handled once, and no signature, a wrong secret or a timestamp 10 minutes old each got a 401; two `v1` values, as after a secret rotation, were accepted.
+
 Step by step, with the why behind each part: [How to send SMS from WordPress and WooCommerce](https://sparetext.dev/blog/send-sms-from-wordpress).
 
 MIT licensed, like the rest of this repository.

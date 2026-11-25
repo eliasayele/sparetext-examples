@@ -1,7 +1,7 @@
 <?php
 /**
  * Plugin Name:       Sparetext SMS
- * Plugin URI:        https://github.com/eliasayele/sparetext-examples/tree/main/wordpress
+ * Plugin URI:        https://sparetext.dev/blog/send-sms-from-wordpress
  * Description:       Texts you about new WooCommerce orders and contact form messages, texts customers when their order is complete, and passes on the replies, all from your own phone through Sparetext.
  * Version:           1.0.0
  * Requires at least: 6.0
@@ -9,6 +9,7 @@
  * Author:            Sparetext
  * Author URI:        https://sparetext.dev
  * License:           MIT
+ * License URI:       https://opensource.org/licenses/MIT
  *
  * Settings go in wp-config.php, above the "That's all, stop editing!" line, so the key never sits in
  * the database or in a backup of it:
@@ -43,6 +44,7 @@ function sparetext_send(string $to, string $text, string $key = '')
         'timeout' => 15,
     ]);
     if (is_wp_error($res)) {
+        // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- a failed text is logged on purpose
         error_log('Sparetext: ' . $res->get_error_message());
         return $res;
     }
@@ -50,6 +52,7 @@ function sparetext_send(string $to, string $text, string $key = '')
     $body = json_decode(wp_remote_retrieve_body($res), true);
     if ($status >= 400) {
         $error = new WP_Error('sparetext_' . ($body['error']['code'] ?? 'error'), $body['error']['message'] ?? "HTTP $status");
+        // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- a failed text is logged on purpose
         error_log("Sparetext: $status " . $error->get_error_message());
         return $error;
     }
@@ -122,8 +125,11 @@ add_action('wpcf7_before_send_mail', function ($form, &$abort, $submission) {
         return;
     }
     $data = $submission->get_posted_data();
-    $who = trim(($data['your-name'] ?? '') . ' ' . (isset($data['your-email']) ? "<{$data['your-email']}>" : ''));
-    $what = wp_html_excerpt((string) ($data['your-message'] ?? ''), 200, '...');
+    $name = sanitize_text_field($data['your-name'] ?? '');
+    $email = sanitize_email((string) ($data['your-email'] ?? ''));
+    $who = trim($name . ($email !== '' ? " <$email>" : ''));
+    // Plain text for a phone, not HTML: sanitized, cut at 200 characters, and "I <3 it" kept, not "I &lt;3 it".
+    $what = wp_specialchars_decode(wp_html_excerpt(sanitize_textarea_field($data['your-message'] ?? ''), 200, '...'), ENT_QUOTES);
     $text = sprintf('New message on %s from %s: %s', $form->title(), $who ?: 'someone', $what);
     sparetext_send(SPARETEXT_NOTIFY, apply_filters('sparetext_form_text', $text, $form, $data));
 }, 10, 3);
@@ -154,10 +160,13 @@ function sparetext_incoming(WP_REST_Request $request)
     }
     set_transient($seen, 1, 4 * DAY_IN_SECONDS);
 
-    if (($event['type'] ?? '') === 'message.received') {
+    if (($event['type'] ?? '') === 'message.received' && is_array($event['data']['message'] ?? null)) {
         $message = $event['data']['message'];
         do_action('sparetext_message_received', $message);
-        wp_mail(get_option('admin_email'), "Text from {$message['contact']}", $message['text']);
+        // A plain-text email: anything that looks like HTML is dropped, the words are kept as they were sent.
+        $from = sanitize_text_field($message['contact'] ?? '');
+        $words = wp_specialchars_decode(sanitize_textarea_field($message['text'] ?? ''), ENT_QUOTES);
+        wp_mail(get_option('admin_email'), "Text from $from", $words);
     }
     return new WP_REST_Response(null, 200);
 }
