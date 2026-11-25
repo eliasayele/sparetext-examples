@@ -113,8 +113,9 @@ The examples in this repository are MIT licensed. Sparetext itself is a hosted s
 
 ## Good to know
 
-- Texts from a personal SIM suit reminders, alerts, one-time codes and conversations with people who know your number. Carriers filter bulk A2P marketing sent from personal numbers, so for blasts, short codes or a delivery guarantee, use a registered sender.
-- An Android phone sends about 30 SMS parts a minute (Android's own limit). A long text is split into concatenated parts: 160 GSM-7 characters fit in one part, 153 in each part after that, and 70 or 67 for UCS-2 (emoji and many non-Latin scripts).
+- Texts from a personal SIM suit reminders, alerts, one-time codes and conversations with people who know your number. Carriers filter bulk A2P marketing sent from personal numbers, so for blasts, short codes or a delivery guarantee, use a registered sender. Where US 10DLC registration does and doesn't come in: [Can you send texts without 10DLC registration?](https://sparetext.dev/blog/send-sms-without-10dlc)
+- An Android phone sends about 30 SMS parts a minute (Android's own limit). A long text is split into concatenated parts: 160 GSM-7 characters fit in one part, 153 in each part after that, and 70 or 67 for UCS-2 (emoji and many non-Latin scripts). One emoji or curly quote switches the whole text to UCS-2: [why one emoji can double your SMS](https://sparetext.dev/blog/why-one-emoji-can-double-your-sms).
+- A text that says `delivered` can still go missing on the other phone, in a spam filter for one. What the carrier's report can and can't tell you, and how to catch texts nobody confirmed: [SMS delivered but not received](https://sparetext.dev/blog/sms-delivered-but-not-received).
 - Replies sent over RCS never reach Sparetext. Turn RCS chats off on a phone that receives replies.
 - Webhook URLs must be public `https` addresses. Without one, poll with `GET /api/v1/messages?order=asc` ([`node/read-new-texts.mjs`](node/read-new-texts.mjs)).
 
@@ -123,7 +124,10 @@ The examples in this repository are MIT licensed. Sparetext itself is a hosted s
 - [API reference](https://sparetext.dev/docs) with every endpoint, webhook event and error
 - [OpenAPI 3.1 spec](https://sparetext.dev/openapi.json) for n8n, Make and code generators
 - [MCP server card](https://sparetext.dev/.well-known/mcp.json) and [llms.txt](https://sparetext.dev/llms.txt)
-- Guides: [receive SMS by webhook](https://sparetext.dev/receive-sms-webhook), [OTP codes](https://sparetext.dev/sms-otp-verification), [n8n](https://sparetext.dev/n8n-sms), [Home Assistant](https://sparetext.dev/home-assistant-sms), [AI agents](https://sparetext.dev/ai-agent-send-sms)
+- Guides: [receive SMS by webhook](https://sparetext.dev/receive-sms-webhook), [OTP codes](https://sparetext.dev/sms-otp-verification), [n8n](https://sparetext.dev/n8n-sms), [Home Assistant](https://sparetext.dev/home-assistant-sms), [AI agents](https://sparetext.dev/ai-agent-send-sms), [iPhone as an SMS gateway](https://sparetext.dev/iphone-sms-gateway)
+- Walkthroughs: [SMS alerts from Uptime Kuma](https://sparetext.dev/blog/uptime-kuma-sms-alerts), [SMS from WordPress and WooCommerce](https://sparetext.dev/blog/send-sms-from-wordpress), [an SMS reply bot with webhooks](https://sparetext.dev/blog/build-an-sms-reply-bot-with-webhooks)
+- Choosing a gateway: [Android SMS gateway apps compared](https://sparetext.dev/blog/android-sms-gateway-apps-compared) (textbee, httpSMS, SMS Gateway for Android and Sparetext, including where each one wins)
+- The MCP server on Glama: [![Sparetext MCP connector](https://glama.ai/mcp/connectors/dev.sparetext/sparetext/badges/score.svg)](https://glama.ai/mcp/connectors/dev.sparetext/sparetext)
 - Questions: hello@sparetext.dev
 
 ## License
