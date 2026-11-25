@@ -2,7 +2,7 @@
 
 # Sparetext examples: a free SMS API from your own phone
 
-**Send and receive real SMS from the Android phone or iPhone you already own, with one HTTP request.** These are working examples for [Sparetext](https://sparetext.dev): curl, Python, Node.js, n8n, Home Assistant, signed webhooks, one-time codes, and the hosted MCP server that lets Claude, ChatGPT and Cursor text from your own number.
+**Send and receive real SMS from the Android phone or iPhone you already own, with one HTTP request.** These are working examples for [Sparetext](https://sparetext.dev): curl, Python, Node.js, PHP, a WordPress and WooCommerce plugin, n8n, Home Assistant, signed webhooks, one-time codes, and the hosted MCP server that lets Claude, ChatGPT and Cursor text from your own number.
 
 ![Sparetext: the dashboard and the Android app sending texts from your own number](https://sparetext.dev/sparetext-og.png)
 
@@ -12,7 +12,7 @@
 - Texts go out from the phone's own SIM, so people see your number, and their replies come back to the same phone and on to your code.
 - **Free:** 1 phone and 300 texts a month with every feature, no card. No Twilio account, no number to rent and no fee per text: your carrier plan pays for the texts. [Pro](https://sparetext.dev/pricing) adds phones and texts.
 - **Android** sends by itself in the background and reports `sent` and `delivered` from the carrier's delivery reports.
-- **iPhone** sends within what Apple allows: Sparetext for Mac sends automatically through Messages from the iPhone's number, a Shortcut sends while the app is open, or you tap Send for each text.
+- **iPhone** sends within what Apple allows: Sparetext for Mac sends automatically through Messages from the iPhone's number, or the iPhone hands each text to a Shortcut you add once (with Send while locked on, that works on a locked phone too), or you tap Send for each text.
 
 ## Quick start
 
@@ -75,6 +75,8 @@ Twilio is still the right tool for marketing, thousands of texts a day, short co
 | [`curl/`](curl/) | Send a text, check its status, read replies, poll for new texts, send to many people, one-time codes |
 | [`python/`](python/) | Standard library only: send, send and wait for the reply, a signed webhook receiver, one-time codes |
 | [`node/`](node/) | Node 18 or newer, no packages: send, a different text per person, wait for the reply, read new texts in order, a signed webhook receiver |
+| [`php/`](php/) | PHP 7.4 or newer with the cURL extension, no Composer package: one function for every call, a send that's safe to retry, a signed webhook receiver |
+| [`wordpress/`](wordpress/) | A one-file WordPress plugin: text yourself about new WooCommerce orders and Contact Form 7 messages, text customers when their order is complete, take replies by signed webhook |
 | [`twilio-compatible/`](twilio-compatible/) | Code written for Twilio's Messages API, sending from your own phone: Twilio's curl call and its official Node.js and Python clients with the host and the key changed, a StatusCallback receiver, and an "A message comes in" handler that answers TwiML |
 | [`n8n/`](n8n/) | Send from an HTTP Request node, start a workflow when a text arrives, check the signature in a Code node, give an AI Agent your phone |
 | [`home-assistant/`](home-assistant/) | Text from any automation with a RESTful notifier, and run automations when a text arrives |
@@ -98,7 +100,10 @@ Install Sparetext on the phone, pair it by scanning a QR code, make an API key, 
 Yes. Sparetext hosts one at `https://sparetext.dev/mcp` (Streamable HTTP, OAuth 2.1). Add it as a custom connector, sign in, and the assistant sends and reads texts from your own phone, asking you before each send. See [`mcp/`](mcp/) and [sparetext.dev/sms-mcp-server](https://sparetext.dev/sms-mcp-server).
 
 **Does it work on iPhone?**
-Yes, within what Apple allows: Sparetext for Mac sends automatically from the iPhone's number and reads replies, a Shortcut sends while the app is open, or you tap Send for each text. See [sparetext.dev/iphone-sms-gateway](https://sparetext.dev/iphone-sms-gateway).
+Yes, within what Apple allows: Sparetext for Mac sends automatically from the iPhone's number and reads replies, the iPhone hands each text to a Shortcut (with Send while locked on, even on a locked phone), or you tap Send for each text. See [sparetext.dev/iphone-sms-gateway](https://sparetext.dev/iphone-sms-gateway).
+
+**Can WordPress or WooCommerce send SMS from my own phone?**
+Yes. [`wordpress/`](wordpress/) has a one-file plugin: it texts you about each new WooCommerce order and each Contact Form 7 message, texts customers when their order is complete, and takes their replies by signed webhook. The key goes in `wp-config.php`, and order texts are sent in the background so checkout never waits. Step by step: [sparetext.dev/blog/send-sms-from-wordpress](https://sparetext.dev/blog/send-sms-from-wordpress)
 
 **Can I receive SMS by webhook?**
 Yes. Each text the phone receives is posted to your URL as JSON, signed with HMAC-SHA256, and tried again for about 3 days if your server is down. [`python/webhook_receiver.py`](python/webhook_receiver.py) and [`node/webhook-receiver.mjs`](node/webhook-receiver.mjs) check the signature.
